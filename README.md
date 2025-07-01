@@ -1,0 +1,2 @@
+# Nebulalend
+NebulaLend enables private, collateralized lending using zk-SNARKs, which allow users to prove their borrowing reputation and collateral sufficiency without revealing any underlying data. It introduces the ability to conduct fully private borrowing/lending transactions on Ethereum, deployed on a Layer 2 network  for scalability and low gas fees.
