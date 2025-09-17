@@ -146,9 +146,121 @@ const NebulaLendPlatform = () => {
   ];
 
   // Wallet connection functions
+const connectMetaMask = async () => {
+    try {
+      if (typeof window.ethereum !== 'undefined') {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const balance = await window.ethereum.request({ 
+          method: 'eth_getBalance', 
+          params: [accounts[0], 'latest'] 
+        });
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        
+        const balanceInEth = (parseInt(balance, 16) / Math.pow(10, 18)).toFixed(4);
+        
+        setWalletInfo({
+          address: accounts[0],
+          balance: balanceInEth,
+          chainId: parseInt(chainId, 16),
+          walletType: 'MetaMask'
+        });
+        setWalletConnected(true);
+        setShowWalletModal(false);
+        
+        // Simulate loading user data
+        loadUserData();
+      } else {
+        alert('MetaMask is not installed!');
+      }
+    } catch (error) {
+      console.error('Error connecting MetaMask:', error);
+    }
+  };
 
+  const connectPhantom = async () => {
+    try {
+      if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
+        const response = await window.solana.connect();
+        const balance = await window.solana.request({ 
+          method: 'getBalance',
+          params: [response.publicKey.toString()] 
+        });
+        
+        setWalletInfo({
+          address: response.publicKey.toString(),
+          balance: (balance / Math.pow(10, 9)).toFixed(4),
+          chainId: 1, // Solana mainnet
+          walletType: 'Phantom'
+        });
+        setWalletConnected(true);
+        setShowWalletModal(false);
+        loadUserData();
+      } else {
+        alert('Phantom wallet is not installed!');
+      }
+    } catch (error) {
+      console.error('Error connecting Phantom:', error);
+    }
+  };
 
+  const connectWallet = async (walletId: string) => {
+    switch (walletId) {
+      case 'metamask':
+        await connectMetaMask();
+        break;
+      case 'phantom':
+        await connectPhantom();
+        break;
+      case 'walletconnect':
+      case 'coinbase':
+      case 'trust':
+      case 'rainbow':
+        // Simulate connection for other wallets
+        setWalletInfo({
+          address: '0x' + Math.random().toString(16).substr(2, 40),
+          balance: (Math.random() * 10).toFixed(4),
+          chainId: 1,
+          walletType: walletId
+        });
+        setWalletConnected(true);
+        setShowWalletModal(false);
+        loadUserData();
+        break;
+      default:
+        console.log('Wallet not supported yet');
+    }
+  };
 
+  const disconnectWallet = () => {
+    setWalletConnected(false);
+    setWalletInfo(null);
+    setUserStats({
+      totalCollateral: 0,
+      totalBorrowed: 0,
+      availableCredit: 0,
+      creditScore: 0,
+      healthFactor: 0,
+      liquidationThreshold: 0.85
+    });
+    setZkProofs([]);
+  };
+
+  const loadUserData = () => {
+    // Simulate loading user data after wallet connection
+    setTimeout(() => {
+      setUserStats({
+        totalCollateral: 45000,
+        totalBorrowed: 28000,
+        availableCredit: 17000,
+        creditScore: 750,
+        healthFactor: 1.8,
+        liquidationThreshold: 0.85
+      });
+    }, 1000);
+  };
+
+  const generateZkProof = async (type: 'credit' | 'collateral') => {
+    setIsGeneratingProof(true);
     
     // Simulate zk-proof generation
     const newProof: ZkProof = {
